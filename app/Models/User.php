@@ -27,6 +27,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'username',
+        'profile_photo_path',
+        'ktp',
+        'verified',
     ];
 
     /**
@@ -58,4 +62,19 @@ class User extends Authenticatable
     protected $appends = [
         'profile_photo_url',
     ];
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class, 'user_id', 'id');
+    }
+
+    public function wallets()
+    {
+        return $this->hasMany(Wallet::class, 'user_id', 'id');
+    }
+
+    public function transferHistories()
+    {
+        return $this->hasMany(TransferHistory::class, 'user_id', 'id');
+    }
 }
