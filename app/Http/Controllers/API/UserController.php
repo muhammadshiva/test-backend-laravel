@@ -108,4 +108,38 @@ class UserController extends Controller
 
         return ResponseFormatter::success($user, 'Profile updated');
     }
+
+    public function logout(Request $request)
+    {
+
+        $token = $request->user()->currentAccessToken()->delete();
+
+        return ResponseFormatter::success(
+            $token,
+            'Token Revoked'
+        );
+    }
+
+    public function isEmailExist(Request $request)
+    {
+
+        try {
+            $user = User::where('email', $request->email)->first();
+
+
+            if ($request->email != $user->email) {
+                throw new \Exception('Email does not exist');
+            }
+
+            return ResponseFormatter::success(
+                $user,
+                'Email Exist'
+            );
+        } catch (Exception $error) {
+            return ResponseFormatter::error([
+                'message' => 'Something went wrong',
+                'error' => $error
+            ], 'Email does not exist', 500);
+        }
+    }
 }
