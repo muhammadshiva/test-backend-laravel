@@ -1,4 +1,6 @@
 window._ = require('lodash');
+import _ from 'lodash';
+window._ = _;
 
 /**
  * We'll load the axios HTTP library which allows us to easily issue requests
@@ -16,6 +18,8 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
  * allows your team to easily build robust real-time web applications.
  */
 
+import axios from 'axios';
+window.axios = axios;
 // import Echo from 'laravel-echo';
 
 // window.Pusher = require('pusher-js');
