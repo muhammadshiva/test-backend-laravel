@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Wallet;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -25,13 +26,22 @@ class UserController extends Controller
                 'password' => ['required', 'string', new Password],
             ]);
 
-            // Create User
-            User::create([
+            // Create User and Wallet
+            $users = User::create([
                 'name' => $request->name,
                 'username' => $request->username,
                 'email' => $request->email,
                 'ktp' => $request->ktp,
                 'password' => Hash::make($request->password),
+            ]);
+
+            $num = str_pad(mt_rand(1, 99999999), 16, '0', STR_PAD_LEFT);
+
+            $wallet = Wallet::create([
+                'balance' => 0,
+                'pin' => '123123123',
+                'user_id' => $users->id,
+                'card_number' => strval($num),
             ]);
 
             // Store to user table
@@ -43,7 +53,13 @@ class UserController extends Controller
             return ResponseFormatter::success([
                 'access_token' => $tokenResult,
                 'token_type' => 'Bearer',
-                'user' => $user,
+                'user' => $users,
+                'wallet' =>
+                [
+                    "balance" => $wallet->balance,
+                    "card_number" => $wallet->card_number,
+                    "pin" => $wallet->pin,
+                ],
             ], 'User Registered');
         } catch (Exception $error) {
             return ResponseFormatter::error([
