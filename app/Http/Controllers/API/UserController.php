@@ -139,23 +139,16 @@ class UserController extends Controller
     public function isEmailExist(Request $request)
     {
 
-        try {
-            $user = User::where('email', $request->email)->first();
+        return ResponseFormatter::success(
+            ['is_email_exist' => User::where('email', $request->email)->exists()]
+        );
+    }
 
-
-            if ($request->email != $user->email) {
-                throw new \Exception('Email does not exist');
-            }
-
-            return ResponseFormatter::success(
-                $user,
-                'Email Exist'
-            );
-        } catch (Exception $error) {
-            return ResponseFormatter::error([
-                'message' => 'Something went wrong',
-                'error' => $error
-            ], 'Email does not exist', 500);
-        }
+    public function getUserByUserName($username)
+    {
+        $users = User::where('username', $username)->get();
+        return ResponseFormatter::success(
+            $users
+        );
     }
 }
