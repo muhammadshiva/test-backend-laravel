@@ -30,6 +30,9 @@ Route::post('login', [UserController::class, 'login']);
 Route::get('tips', [TipController::class, 'fetch']);
 Route::get('payment_methods', [PaymentMethodController::class, 'all']);
 
+Route::get('user/{username}', [UserController::class, 'getUserByUserName']);
+
+
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('user', [UserController::class, 'fetch']);
