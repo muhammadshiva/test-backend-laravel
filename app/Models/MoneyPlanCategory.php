@@ -9,6 +9,8 @@ class MoneyPlanCategory extends Model
 {
     use HasFactory;
 
+    protected $table = 'money_plans_categories';
+
     protected $fillable = [
         'name',
         'thumbnail',
