@@ -20,14 +20,14 @@ class UserController extends Controller
             // Validation
             $request->validate([
                 'name' => ['required', 'string', 'max:255'],
-                'username' => ['required', 'string', 'max:255', 'unique:users'],
+                'username' => ['nullable', 'string', 'max:255', 'unique:users'],
                 'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
                 'ktp' => ['nullable', 'string', 'max:255'],
                 'password' => ['required', 'string', new Password],
             ]);
 
             // Create User and Wallet
-            $users = User::create([
+            $user = User::create([
                 'name' => $request->name,
                 'username' => $request->username,
                 'email' => $request->email,
@@ -40,12 +40,12 @@ class UserController extends Controller
             $wallet = Wallet::create([
                 'balance' => 0,
                 'pin' => '123123123',
-                'user_id' => $users->id,
+                'user_id' => $user->id,
                 'card_number' => strval($num),
             ]);
 
             // Store to user table
-            $user = User::where('email', $request->email)->first();
+            // $user = User::where('email', $request->email)->first();
 
             // Create Token 
             $tokenResult = $user->createToken('authToken')->plainTextToken;
@@ -53,7 +53,7 @@ class UserController extends Controller
             return ResponseFormatter::success([
                 'access_token' => $tokenResult,
                 'token_type' => 'Bearer',
-                'user' => $users,
+                'user' => $user,
                 'wallet' =>
                 [
                     "balance" => $wallet->balance,
@@ -80,28 +80,24 @@ class UserController extends Controller
 
             $credentials = request(['email', 'password']);
             if (!Auth::attempt($credentials)) {
-                return ResponseFormatter::error([
-                    'message' => 'Unauthorized'
-                ], 'Authentication Failed', 500);
+                return response()->json([
+                    'message' => 'Invalid'
+                ], 500);
             }
 
             $user = User::where('email', $request->email)->first();
 
             if (!Hash::check($request->password, $user->password, [])) {
-                throw new \Exception('Invalid Credentials');
+                return response()->json([
+                    'message' => 'Invalid'
+                ], 500);
             }
 
             $tokenResult = $user->createToken('authToken')->plainTextToken;
-            return ResponseFormatter::success([
-                'access_token' => $tokenResult,
-                'token_type' => 'Bearer',
-                'user' => $user
-            ], 'Authenticated');
+            $user['token'] = $tokenResult;
+            return response()->json($user, 200);
         } catch (Exception $error) {
-            return ResponseFormatter::error([
-                'message' => 'Something went wrong',
-                'error' => $error
-            ], 'Authentication Failed', 500);
+            return response()->json($error->getMessage(), 500);
         }
     }
 
