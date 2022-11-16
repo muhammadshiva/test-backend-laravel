@@ -8,6 +8,7 @@ use App\Http\Controllers\API\TransactionController;
 use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\WalletController;
 use App\Http\Controllers\API\MoneyPlanController;
+use App\Http\Controllers\Api\v1\AuthController;
 use App\Models\MoneyPlan;
 use App\Models\Wallet;
 use Illuminate\Http\Request;
@@ -51,4 +52,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('data_plans', [TransactionController::class, 'dataPlans']);
     Route::get('money_plans', [MoneyPlanController::class, 'fetch']);
     Route::post('money_plans', [MoneyPlanController::class, 'create']);
+});
+
+// V1
+
+Route::prefix("v1")->group(function () {
+    Route::post('register', [AuthController::class, 'register']);
+    Route::post('login', [AuthController::class, 'login']);
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('logout', [AuthController::class, 'logout']);
+        Route::post('user', [AuthController::class, 'updateProfile']);
+        Route::post('is-email-exist', [AuthController::class, 'isEmailExist']);
+        Route::get('user', [AuthController::class, 'getUser']);
+        Route::get('user/{username}', [AuthController::class, 'getUserByUserName']);
+    });
 });
