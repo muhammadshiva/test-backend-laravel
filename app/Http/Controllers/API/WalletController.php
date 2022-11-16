@@ -26,13 +26,37 @@ class WalletController extends Controller
         // $cardNumber = $request->input('card_number');
     }
 
+    // public function updatePin(Request $request)
+    // {
+
+
+    //     $user_id = Auth::user();
+    //     $wallet = Wallet::firstWhere('user_id', $user_id->id);
+    //     $wallet->pin = $request->pin;
+    //     $wallet->save();
+
+    //     return ResponseFormatter::success($wallet, 'Pin Updated');
+    // }
+
     public function updatePin(Request $request)
     {
-        $user_id = Auth::user();
-        $wallet = Wallet::firstWhere('user_id', $user_id->id);
-        $wallet->pin = $request->pin;
-        $wallet->save();
+        $pin = $request->previous_pin;
+        $user = Auth::user();
 
-        return ResponseFormatter::success($wallet, 'Pin Updated');
+        $checkPin = Wallet::where('user_id', $user->id)->where('pin', $pin)->first();
+
+        if (!$checkPin) {
+            return ResponseFormatter::error([
+                'message' => 'Pin Salah',
+            ]);
+        }
+
+        $checkPin->update([
+            'pin' => $request->new_pin,
+        ]);
+
+        return ResponseFormatter::success([
+            'message' => 'Pin Updated',
+        ]);
     }
 }
