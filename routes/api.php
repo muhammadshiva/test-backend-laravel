@@ -65,5 +65,19 @@ Route::prefix("v1")->group(function () {
         Route::post('is-email-exist', [AuthController::class, 'isEmailExist']);
         Route::get('user', [AuthController::class, 'getUser']);
         Route::get('user/{username}', [AuthController::class, 'getUserByUserName']);
+        Route::get('products', [ProductController::class, 'all']);
+
+        Route::get('tips', [TipController::class, 'fetch']);
+        Route::get('payment_methods', [PaymentMethodController::class, 'all']);
+        Route::get('wallets', [WalletController::class, 'fetch']);
+        Route::put('wallets', [WalletController::class, 'updatePin']);
+        Route::post('top_ups', [TransactionController::class, 'topUp']);
+        Route::post('transfers', [TransactionController::class, 'transfer']);
+        Route::get('transactions', [TransactionController::class, 'getTransactions']);
+        Route::get('transfer_histories', [TransactionController::class, 'getTransferHistories']);
+        Route::get('operator_cards', [OperatorCardController::class, 'fetch']);
+        Route::post('data_plans', [TransactionController::class, 'dataPlans']);
+        Route::get('money_plans', [MoneyPlanController::class, 'fetch']);
+        Route::post('money_plans', [MoneyPlanController::class, 'create']);
     });
 });
