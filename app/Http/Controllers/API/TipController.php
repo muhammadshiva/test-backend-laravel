@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 
 class TipController extends Controller
 {
-    public function fetch(Request $request)
+    public function fetch()
     {
         $tip = Tip::all();
 
