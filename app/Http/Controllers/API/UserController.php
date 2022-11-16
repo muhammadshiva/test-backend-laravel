@@ -146,9 +146,16 @@ class UserController extends Controller
 
     public function getUserByUserName($username)
     {
-        $users = User::where('username', $username)->get();
-        return ResponseFormatter::success(
-            $users
-        );
+        try {
+            $users = User::where('username', $username)->get();
+            return ResponseFormatter::success(
+                $users
+            );
+        } catch (Exception $error) {
+            return ResponseFormatter::error([
+                'message' => 'Something went wrong',
+                'error' => $error
+            ], 'User Not Found', 404);
+        }
     }
 }
