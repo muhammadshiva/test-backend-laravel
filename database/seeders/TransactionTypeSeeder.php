@@ -23,13 +23,6 @@ class TransactionTypeSeeder extends Seeder
                 'updated_at' => now()
             ],
             [
-                'name' => 'Transfer',
-                'code' => 'transfer',
-                'action' => 'dr',
-                'created_at' => now(),
-                'updated_at' => now()
-            ],
-            [
                 'name' => 'Top Up',
                 'code' => 'top_up',
                 'action' => 'cr',
