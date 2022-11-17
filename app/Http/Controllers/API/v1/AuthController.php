@@ -53,10 +53,33 @@ class AuthController extends Controller
             if (!Auth::attempt($credentials)) {
                 return ResponseCustom::error(['message' => 'Invalid email or password']);
             }
-            $user = User::where('email', $request->email)->first();
+            // $user = User::where('email', $request->email)->first();
+            // $wallet = Wallet::where('user_id', $user->id)->first();
+
+            $user = User::with('wallets')->firstWhere('email', $request->email);
+            $wallet = Wallet::where('user_id', $user->id)->first();
+
             $tokenResult = $user->createToken('authToken')->plainTextToken;
             $user['token'] = $tokenResult;
-            return ResponseCustom::success($user);
+            return ResponseCustom::success(
+                [
+                    "id" => $user->id,
+                    "name" => $user->name,
+                    "email" => $user->email,
+                    "username" => $user->username,
+                    "verified" => $user->verified,
+                    "email_verified_at" => $user->email_verified_at,
+                    "profile_photo_path" => $user->profile_photo_path,
+                    "ktp" => $user->ktp,
+                    "created_at" => $user->created_at,
+                    "updated_at" => $user->updated_at,
+                    "balance" => $wallet->balance,
+                    "card_number" => $wallet->card_number,
+                    "pin" => $wallet->pin,
+                    "token" => $user->token,
+                    "token_type" => "bearer",
+                ]
+            );
         } catch (\Throwable $th) {
             return ResponseCustom::error($th->getMessage());
         }
