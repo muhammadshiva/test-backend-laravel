@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Wallet;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -19,14 +20,14 @@ class UserController extends Controller
             // Validation
             $request->validate([
                 'name' => ['required', 'string', 'max:255'],
-                'username' => ['required', 'string', 'max:255', 'unique:users'],
+                'username' => ['nullable', 'string', 'max:255', 'unique:users'],
                 'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
                 'ktp' => ['nullable', 'string', 'max:255'],
                 'password' => ['required', 'string', new Password],
             ]);
 
-            // Create User
-            User::create([
+            // Create User and Wallet
+            $user = User::create([
                 'name' => $request->name,
                 'username' => $request->username,
                 'email' => $request->email,
@@ -34,8 +35,17 @@ class UserController extends Controller
                 'password' => Hash::make($request->password),
             ]);
 
+            $num = str_pad(mt_rand(1, 99999999), 16, '0', STR_PAD_LEFT);
+
+            $wallet = Wallet::create([
+                'balance' => 0,
+                'pin' => '123123123',
+                'user_id' => $user->id,
+                'card_number' => strval($num),
+            ]);
+
             // Store to user table
-            $user = User::where('email', $request->email)->first();
+            // $user = User::where('email', $request->email)->first();
 
             // Create Token 
             $tokenResult = $user->createToken('authToken')->plainTextToken;
@@ -44,6 +54,12 @@ class UserController extends Controller
                 'access_token' => $tokenResult,
                 'token_type' => 'Bearer',
                 'user' => $user,
+                'wallet' =>
+                [
+                    "balance" => $wallet->balance,
+                    "card_number" => $wallet->card_number,
+                    "pin" => $wallet->pin,
+                ],
             ], 'User Registered');
         } catch (Exception $error) {
             return ResponseFormatter::error([
@@ -64,28 +80,24 @@ class UserController extends Controller
 
             $credentials = request(['email', 'password']);
             if (!Auth::attempt($credentials)) {
-                return ResponseFormatter::error([
-                    'message' => 'Unauthorized'
-                ], 'Authentication Failed', 500);
+                return response()->json([
+                    'message' => 'Invalid'
+                ], 500);
             }
 
             $user = User::where('email', $request->email)->first();
 
             if (!Hash::check($request->password, $user->password, [])) {
-                throw new \Exception('Invalid Credentials');
+                return response()->json([
+                    'message' => 'Invalid'
+                ], 500);
             }
 
             $tokenResult = $user->createToken('authToken')->plainTextToken;
-            return ResponseFormatter::success([
-                'access_token' => $tokenResult,
-                'token_type' => 'Bearer',
-                'user' => $user
-            ], 'Authenticated');
+            $user['token'] = $tokenResult;
+            return response()->json($user, 200);
         } catch (Exception $error) {
-            return ResponseFormatter::error([
-                'message' => 'Something went wrong',
-                'error' => $error
-            ], 'Authentication Failed', 500);
+            return response()->json($error->getMessage(), 500);
         }
     }
 
@@ -123,23 +135,23 @@ class UserController extends Controller
     public function isEmailExist(Request $request)
     {
 
+        return ResponseFormatter::success(
+            ['is_email_exist' => User::where('email', $request->email)->exists()]
+        );
+    }
+
+    public function getUserByUserName($username)
+    {
         try {
-            $user = User::where('email', $request->email)->first();
-
-
-            if ($request->email != $user->email) {
-                throw new \Exception('Email does not exist');
-            }
-
+            $users = User::where('username', $username)->get();
             return ResponseFormatter::success(
-                $user,
-                'Email Exist'
+                $users
             );
         } catch (Exception $error) {
             return ResponseFormatter::error([
                 'message' => 'Something went wrong',
                 'error' => $error
-            ], 'Email does not exist', 500);
+            ], 'User Not Found', 404);
         }
     }
 }
