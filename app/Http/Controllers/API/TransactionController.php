@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Helpers\ResponseFormatter;
+use App\Helpers\ResponseCustom;
 use App\Http\Controllers\Controller;
 use App\Models\DataPlan;
 use App\Models\PaymentMethod;
@@ -55,7 +55,7 @@ class TransactionController extends Controller
         $checkPin = Wallet::where('user_id', $user->id)->where('pin', $pin)->first();
 
         if (!$checkPin) {
-            return ResponseFormatter::error([
+            return ResponseCustom::error([
                 'message' => 'Pin Salah'
             ],);
         }
@@ -94,7 +94,7 @@ class TransactionController extends Controller
             ]
         ]);
 
-        return ResponseFormatter::success(
+        return ResponseCustom::success(
             $response_midtrans,
         );
     }
@@ -131,7 +131,7 @@ class TransactionController extends Controller
             'balance' => $walletReceiver->balance + $amount
         ]);
 
-        return ResponseFormatter::success([
+        return ResponseCustom::success([
             'user' => 'Transfer Sukses'
         ],);
     }
@@ -140,7 +140,7 @@ class TransactionController extends Controller
     {
         $trx = Transaction::paginate($request->limit);
 
-        return ResponseFormatter::success([
+        return ResponseCustom::success([
             $trx,
         ]);
     }
@@ -159,7 +159,7 @@ class TransactionController extends Controller
                 ];
             });
 
-        return ResponseFormatter::success(
+        return ResponseCustom::success(
             $trx,
         );
     }
@@ -174,7 +174,7 @@ class TransactionController extends Controller
         $checkPin = Wallet::where('user_id', $user->id)->where('pin', $pin)->first();
 
         if (!$checkPin) {
-            return ResponseFormatter::error(
+            return ResponseCustom::error(
                 [
                     'message' => 'Pin Salah'
                 ]
@@ -188,7 +188,7 @@ class TransactionController extends Controller
 
         ]);
 
-        return ResponseFormatter::success([
+        return ResponseCustom::success([
             'message' => 'Buy Data Plan Success',
         ]);
     }
