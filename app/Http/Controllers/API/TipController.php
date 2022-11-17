@@ -2,19 +2,25 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Helpers\ResponseFormatter;
+use App\Helpers\ResponseCustom;
 use App\Http\Controllers\Controller;
 use App\Models\Tip;
 use Illuminate\Http\Request;
 
 class TipController extends Controller
 {
-    public function fetch()
+    public function fetch(Request $request)
     {
-        $tip = Tip::all();
+        $tip = Tip::paginate($request->limit);
 
-        return ResponseFormatter::success([
-            'tip' => $tip,
-        ]);
+        return ResponseCustom::success(
+            $tip
+            // 'data' => [
+            //     // 'id' => $tip->id,
+            //     'title' => $tip->title,
+            //     'url' => $tip->url,
+            //     'thumbnail' => $tip->thumbnail,
+            // ],
+        );
     }
 }
