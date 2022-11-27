@@ -17,8 +17,8 @@ class CreateTransactionsTable extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('transaction_type_id')->constrained('transaction_types');
-            $table->foreignId('payment_method_id')->constrained('payment_methods')->nullable();
-            $table->foreignId('product_id')->constrained('products')->nullable();
+            // $table->foreignId('payment_method_id')->constrained('payment_methods')->nullable();
+            // $table->foreignId('product_id')->constrained('products')->nullable();
             $table->float('amount', 10, 2);
             $table->string('transaction_code');
             $table->text('description')->nullable();
