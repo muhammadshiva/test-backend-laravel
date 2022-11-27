@@ -40,7 +40,30 @@ class AuthController extends Controller
             // Create Token
             $tokenResult = $user->createToken('authToken')->plainTextToken;
             $user['token'] = $tokenResult;
-            return ResponseCustom::success($user);
+
+            // Get User Data
+            $userRes = User::with('wallets')->firstWhere('email', $request->email);
+            $walletRes = Wallet::where('user_id', $userRes->id)->first();
+
+            return ResponseCustom::success(
+                [
+                    "id" => $userRes->id,
+                    "name" => $userRes->name,
+                    "email" => $userRes->email,
+                    "username" => $userRes->username,
+                    "verified" => $userRes->verified,
+                    "email_verified_at" => $userRes->email_verified_at,
+                    "profile_photo_path" => $userRes->profile_photo_path,
+                    "ktp" => $userRes->ktp,
+                    "created_at" => $userRes->created_at,
+                    "updated_at" => $userRes->updated_at,
+                    "balance" => $walletRes->balance,
+                    "card_number" => $walletRes->card_number,
+                    "pin" => $walletRes->pin,
+                    "token" => $tokenResult,
+                    "token_type" => "bearer",
+                ]
+            );
         } catch (\Throwable $th) {
             return ResponseCustom::error($th->getMessage());
         }
@@ -96,10 +119,32 @@ class AuthController extends Controller
     }
 
 
-    public function getUser(Request $request)
+    public function getUser()
     {
         try {
-            return ResponseCustom::success($request->user());
+            $userAuth = Auth::user();
+            $user = User::with('wallets')->firstWhere('id', $userAuth->id);
+            $wallet = Wallet::where('user_id', $userAuth->id)->first();
+
+            // $user = User::with('wallets')->firstWhere('email', $request->email);
+            // $wallet = Wallet::where('user_id', $user->id)->first();
+            return ResponseCustom::success(
+                [
+                    "id" => $user->id,
+                    "name" => $user->name,
+                    "email" => $user->email,
+                    "username" => $user->username,
+                    "verified" => $user->verified,
+                    "email_verified_at" => $user->email_verified_at,
+                    "profile_photo_path" => $user->profile_photo_path,
+                    "ktp" => $user->ktp,
+                    "created_at" => $user->created_at,
+                    "updated_at" => $user->updated_at,
+                    "balance" => $wallet->balance,
+                    "card_number" => $wallet->card_number,
+                ]
+            );
+            // return ResponseCustom::success($request->user());
         } catch (\Throwable $th) {
             return ResponseCustom::error($th->getMessage());
         }
@@ -132,7 +177,7 @@ class AuthController extends Controller
     {
         try {
             $token = $request->user()->currentAccessToken()->delete();
-            return ResponseCustom::success(['message' => 'Logout successfully']);
+            return ResponseCustom::success(['message' => 'Logout success']);
         } catch (\Throwable $th) {
             return ResponseCustom::error($th->getMessage());
         }
