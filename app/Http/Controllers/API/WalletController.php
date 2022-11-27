@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Helpers\ResponseFormatter;
+use App\Helpers\ResponseCustom;
 use App\Http\Controllers\Controller;
 use App\Models\Wallet;
 use Illuminate\Http\Request;
@@ -15,7 +15,7 @@ class WalletController extends Controller
         $user_id = Auth::user();
         $wallet = Wallet::firstWhere('user_id', $user_id->id);
 
-        return ResponseFormatter::success([
+        return ResponseCustom::success([
             'balance' => $wallet->balance,
             'card_number' => $wallet->card_number,
         ]);
@@ -35,7 +35,7 @@ class WalletController extends Controller
     //     $wallet->pin = $request->pin;
     //     $wallet->save();
 
-    //     return ResponseFormatter::success($wallet, 'Pin Updated');
+    //     return ResponseCustom::success($wallet, 'Pin Updated');
     // }
 
     public function updatePin(Request $request)
@@ -43,19 +43,17 @@ class WalletController extends Controller
         $pin = $request->previous_pin;
         $user = Auth::user();
 
-        $checkPin = Wallet::where('user_id', $user->id)->where('pin', $pin)->first();
-
-        if (!$checkPin) {
-            return ResponseFormatter::error([
+        if (!Wallet::where([['user_id', $user->id], ['pin', $pin]])->exists()) {
+            return ResponseCustom::error([
                 'message' => 'Pin Salah',
             ]);
         }
 
-        $checkPin->update([
+        $user->wallets->update([
             'pin' => $request->new_pin,
         ]);
 
-        return ResponseFormatter::success([
+        return ResponseCustom::success([
             'message' => 'Pin Updated',
         ]);
     }
