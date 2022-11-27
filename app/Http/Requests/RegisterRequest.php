@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Laravel\Fortify\Rules\Password;
 
 class RegisterRequest extends FormRequest
 {
@@ -26,18 +27,24 @@ class RegisterRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|string',
-            'username' => 'required|string',
-            'email' => 'required|string|unique:users,email',
-            'ktp' => 'required|string',
-            'password' => 'required|string',
-            'pin' => 'required|min:6'
+            'name' => ['required', 'string'],
+            'username' => ['nullable', 'string'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'ktp' => ['nullable', 'string', 'max:255'],
+            'password' => ['required', 'string', new Password],
+            'pin' => ['required', 'min:6'],
+            // 'name' => 'required|string',
+            // 'username' => 'nullable|string',
+            // 'email' => 'required|string|unique:users,email',
+            // 'ktp' => 'nullable|string',
+            // 'password' => 'required|string,new Password',
+            // 'pin' => 'required|min:6'
         ];
     }
 
 
     public function failedValidation(Validator $validator)
     {
-        throw new HttpResponseException( response()->json(['errors' => $validator->errors()]), 400);
+        throw new HttpResponseException(response()->json(['errors' => $validator->errors()]), 400);
     }
 }
