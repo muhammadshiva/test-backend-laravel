@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Helpers\ResponseFormatter;
+use App\Helpers\ResponseCustom;
 use App\Http\Controllers\Controller;
 use App\Models\DataPlan;
 use App\Models\PaymentMethod;
@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Models\Wallet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class TransactionController extends Controller
@@ -29,7 +30,6 @@ class TransactionController extends Controller
             if (in_array($status, ['approve', 'settlement', 'capture'])) {
                 $trx->update([
                     'status' => $status,
-
                 ]);
 
                 $userId = $trx->user_id;
@@ -55,7 +55,7 @@ class TransactionController extends Controller
         $checkPin = Wallet::where('user_id', $user->id)->where('pin', $pin)->first();
 
         if (!$checkPin) {
-            return ResponseFormatter::error([
+            return ResponseCustom::error([
                 'message' => 'Pin Salah'
             ],);
         }
@@ -94,7 +94,7 @@ class TransactionController extends Controller
             ]
         ]);
 
-        return ResponseFormatter::success(
+        return ResponseCustom::success(
             $response_midtrans,
         );
     }
@@ -131,23 +131,62 @@ class TransactionController extends Controller
             'balance' => $walletReceiver->balance + $amount
         ]);
 
-        return ResponseFormatter::success([
+        // Get transactions
+        $user = Auth::user();
+
+        $transactionTypeSender = TransactionType::where('code', 'transfer')->first();
+        $transactionTypeReceive = TransactionType::where('code', 'receive')->first();
+
+
+        $codeTrx = Str::random(10);
+
+        Transaction::create([
+            'user_id' => $user->id,
+            'transaction_type_id' => $transactionTypeSender->id,
+            'amount' => $amount,
+            'transaction_code' => $codeTrx,
+            'status' => 'success',
+        ]);
+
+        Transaction::create([
+            'user_id' => $$receiver->id,
+            'transaction_type_id' => $transactionTypeReceive->id,
+            'amount' => $amount,
+            'transaction_code' => $codeTrx,
+            'status' => 'success',
+        ]);
+
+        return ResponseCustom::success([
             'user' => 'Transfer Sukses'
         ],);
     }
 
     public function getTransactions(Request $request)
     {
-        $trx = Transaction::paginate($request->limit);
+        $trx = Transaction::with('transactionType')->paginate($request->limit);
+        // $trxType = TransactionType::paginate($request->limit);
 
-        return ResponseFormatter::success([
-            $trx,
-        ]);
+        return ResponseCustom::success(
+            $trx
+        );
     }
 
     public function getTransferHistories(Request $request)
     {
-        $trx = TransferHistory::with('receivers')->paginate($request->limit)
+        $senderId = Auth::user();
+
+        // $trx = TransferHistory::with('receivers')->where('sender_id', $senderId->id)->paginate($request->limit);
+        //     $receiver = $item->receivers;
+        //     return [
+        //         'id' => $receiver->id,
+        //         'name' => $receiver->name,
+        //         'username' => $receiver->username,
+        //         'verified' => 1,
+        //         'profile_picture' => $receiver->profile_photo_path,
+        //     ];
+        // });
+
+        $trx = TransferHistory::with('receivers')->where('sender_id', $senderId->id)->paginate($request->limit)
             ->map(function ($item) {
                 $receiver = $item->receivers;
                 return [
@@ -159,9 +198,9 @@ class TransactionController extends Controller
                 ];
             });
 
-        return ResponseFormatter::success([
+        return ResponseCustom::success(
             $trx,
-        ]);
+        );
     }
 
     public function dataPlans(Request $request)
@@ -174,7 +213,7 @@ class TransactionController extends Controller
         $checkPin = Wallet::where('user_id', $user->id)->where('pin', $pin)->first();
 
         if (!$checkPin) {
-            return ResponseFormatter::error(
+            return ResponseCustom::error(
                 [
                     'message' => 'Pin Salah'
                 ]
@@ -185,10 +224,25 @@ class TransactionController extends Controller
 
         $checkPin->update([
             'balance' => $checkPin->balance - $dataPlan->price,
-
         ]);
 
-        return ResponseFormatter::success([
+        // Get transactions
+        $user = Auth::user();
+
+        $transactionType = TransactionType::where('code', 'internet')->first();
+
+        $codeTrx = Str::random(10);
+
+        Transaction::create([
+            'user_id' => $user->id,
+            'transaction_type_id' => $transactionType->id,
+            'amount' => $dataPlan->price,
+            'transaction_code' => $codeTrx,
+            'status' => 'success',
+        ]);
+
+
+        return ResponseCustom::success([
             'message' => 'Buy Data Plan Success',
         ]);
     }
