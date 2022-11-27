@@ -14,9 +14,9 @@ class AddFieldToUsersTable extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('username')->after('email')->unique();
+            $table->string('username')->after('email')->nullable();
             $table->boolean('verified')->after('email')->nullable();
-            $table->string('ktp')->after('email');
+            $table->string('ktp')->after('email')->nullable();
         });
     }
 
