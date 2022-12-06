@@ -60,7 +60,7 @@ Route::prefix("v1")->group(function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
     Route::post('is-email-exist', [AuthController::class, 'isEmailExist']);
-    //Route::post('callback_midtrans', [TransactionController::class, 'callback']);
+    // Route::post('callback_midtrans', [TransactionController::class, 'callback']);
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
         Route::put('user', [AuthController::class, 'updateProfile']);
@@ -79,6 +79,9 @@ Route::prefix("v1")->group(function () {
         Route::post('data_plans', [TransactionController::class, 'dataPlans']);
         Route::get('money_plans', [MoneyPlanController::class, 'fetch']);
         Route::post('money_plans', [MoneyPlanController::class, 'create']);
+        Route::put('money_plans/{id}', [MoneyPlanController::class, 'update']);
+        Route::delete('money_plans/delete/{id}', [MoneyPlanController::class, 'delete']);
         Route::get('tips', [TipController::class, 'fetch']);
+        Route::get('moneyplan-categories', [MoneyPlanController::class, 'getCategories']);
     });
 });
