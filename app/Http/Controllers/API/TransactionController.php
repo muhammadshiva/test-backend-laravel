@@ -131,17 +131,15 @@ class TransactionController extends Controller
             'balance' => $walletReceiver->balance + $amount
         ]);
 
-        // Get transactions
-        $user = Auth::user();
+        //Get transactions
 
         $transactionTypeSender = TransactionType::where('code', 'transfer')->first();
         $transactionTypeReceive = TransactionType::where('code', 'receive')->first();
 
-
         $codeTrx = Str::random(10);
 
         Transaction::create([
-            'user_id' => $user->id,
+            'user_id' => $sender->id,
             'transaction_type_id' => $transactionTypeSender->id,
             'amount' => $amount,
             'transaction_code' => $codeTrx,
@@ -149,7 +147,7 @@ class TransactionController extends Controller
         ]);
 
         Transaction::create([
-            'user_id' => $$receiver->id,
+            'user_id' => $receiver->id,
             'transaction_type_id' => $transactionTypeReceive->id,
             'amount' => $amount,
             'transaction_code' => $codeTrx,
@@ -163,7 +161,8 @@ class TransactionController extends Controller
 
     public function getTransactions(Request $request)
     {
-        $trx = Transaction::with('transactionType')->paginate($request->limit);
+        $userId = Auth::user();
+        $trx = Transaction::with('transactionType')->where('user_id', $userId->id)->paginate($request->limit);
         // $trxType = TransactionType::paginate($request->limit);
 
         return ResponseCustom::success(
@@ -171,7 +170,7 @@ class TransactionController extends Controller
         );
     }
 
-    public function getTransferHistories(Request $request)
+    public function getTransferHistories()
     {
         $senderId = Auth::user();
 
@@ -186,7 +185,7 @@ class TransactionController extends Controller
         //     ];
         // });
 
-        $trx = TransferHistory::with('receivers')->where('sender_id', $senderId->id)->paginate($request->limit)
+        $trx = TransferHistory::with('receivers')->where('sender_id', $senderId->id)
             ->map(function ($item) {
                 $receiver = $item->receivers;
                 return [
