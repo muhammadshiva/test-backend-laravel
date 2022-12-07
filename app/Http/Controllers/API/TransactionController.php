@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Models\Wallet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class TransactionController extends Controller
@@ -29,7 +30,6 @@ class TransactionController extends Controller
             if (in_array($status, ['approve', 'settlement', 'capture'])) {
                 $trx->update([
                     'status' => $status,
-
                 ]);
 
                 $userId = $trx->user_id;
@@ -131,6 +131,29 @@ class TransactionController extends Controller
             'balance' => $walletReceiver->balance + $amount
         ]);
 
+        //Get transactions
+
+        $transactionTypeSender = TransactionType::where('code', 'transfer')->first();
+        $transactionTypeReceive = TransactionType::where('code', 'receive')->first();
+
+        $codeTrx = Str::random(10);
+
+        Transaction::create([
+            'user_id' => $sender->id,
+            'transaction_type_id' => $transactionTypeSender->id,
+            'amount' => $amount,
+            'transaction_code' => $codeTrx,
+            'status' => 'success',
+        ]);
+
+        Transaction::create([
+            'user_id' => $receiver->id,
+            'transaction_type_id' => $transactionTypeReceive->id,
+            'amount' => $amount,
+            'transaction_code' => $codeTrx,
+            'status' => 'success',
+        ]);
+
         return ResponseCustom::success([
             'user' => 'Transfer Sukses'
         ],);
@@ -138,16 +161,31 @@ class TransactionController extends Controller
 
     public function getTransactions(Request $request)
     {
-        $trx = Transaction::paginate($request->limit);
+        $userId = Auth::user();
+        $trx = Transaction::with('transactionType')->where('user_id', $userId->id)->paginate($request->limit);
+        // $trxType = TransactionType::paginate($request->limit);
 
-        return ResponseCustom::success([
-            $trx,
-        ]);
+        return ResponseCustom::success(
+            $trx
+        );
     }
 
-    public function getTransferHistories(Request $request)
+    public function getTransferHistories()
     {
-        $trx = TransferHistory::with('receivers')->paginate($request->limit)
+        $senderId = Auth::user();
+
+        // $trx = TransferHistory::with('receivers')->where('sender_id', $senderId->id)->paginate($request->limit);
+        //     $receiver = $item->receivers;
+        //     return [
+        //         'id' => $receiver->id,
+        //         'name' => $receiver->name,
+        //         'username' => $receiver->username,
+        //         'verified' => 1,
+        //         'profile_picture' => $receiver->profile_photo_path,
+        //     ];
+        // });
+
+        $trx = TransferHistory::with('receivers')->where('sender_id', $senderId->id)
             ->map(function ($item) {
                 $receiver = $item->receivers;
                 return [
@@ -185,8 +223,23 @@ class TransactionController extends Controller
 
         $checkPin->update([
             'balance' => $checkPin->balance - $dataPlan->price,
-
         ]);
+
+        // Get transactions
+        $user = Auth::user();
+
+        $transactionType = TransactionType::where('code', 'internet')->first();
+
+        $codeTrx = Str::random(10);
+
+        Transaction::create([
+            'user_id' => $user->id,
+            'transaction_type_id' => $transactionType->id,
+            'amount' => $dataPlan->price,
+            'transaction_code' => $codeTrx,
+            'status' => 'success',
+        ]);
+
 
         return ResponseCustom::success([
             'message' => 'Buy Data Plan Success',

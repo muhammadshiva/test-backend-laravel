@@ -77,4 +77,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(TransferHistory::class, 'user_id', 'id');
     }
+
+    public function moneyPlans()
+    {
+        return $this->hasMany(MoneyPlan::class, 'user_id', 'id');
+    }
 }

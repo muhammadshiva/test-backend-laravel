@@ -9,12 +9,12 @@ use App\Helpers\ResponseFormatter;
 
 class OperatorCardController extends Controller
 {
-    public function fetch()
+    public function fetch(Request $request)
     {
-        $operator = OperatorCard::all();
+        $operatorCard = OperatorCard::with('dataPlans')->paginate($request->limit);
 
-        return ResponseFormatter::success([
-            $operator,
-        ]);
+        return ResponseFormatter::success(
+            $operatorCard,
+        );
     }
 }

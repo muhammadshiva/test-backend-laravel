@@ -12,8 +12,6 @@ class Transaction extends Model
     protected $fillable = [
         'user_id',
         'transaction_type_id',
-        'payment_method_id',
-        'product_id',
         'amount',
         'transaction_code',
         'description',
@@ -30,13 +28,13 @@ class Transaction extends Model
         return $this->belongsTo(TransactionType::class, 'transaction_type_id', 'id');
     }
 
-    public function paymentMethod()
-    {
-        return $this->belongsTo(PaymentMethod::class, 'payment_method_id', 'id');
-    }
+    // public function paymentMethod()
+    // {
+    //     return $this->belongsTo(PaymentMethod::class, 'payment_method_id', 'id');
+    // }
 
-    public function product()
-    {
-        return $this->belongsTo(Product::class, 'product_id', 'id');
-    }
+    // public function product()
+    // {
+    //     return $this->belongsTo(Product::class, 'product_id', 'id');
+    // }
 }

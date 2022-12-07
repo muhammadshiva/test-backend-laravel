@@ -15,6 +15,7 @@ class CreateMoneyPlansCategoriesTable extends Migration
     {
         Schema::create('money_plans_categories', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained('users');
             $table->string('name');
             $table->string('thumbnail');
             $table->timestamps();
